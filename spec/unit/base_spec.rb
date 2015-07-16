@@ -388,6 +388,34 @@ describe "Model Base" do
     end
   end
 
+  describe "finding models by id in bulk" do
+    before(:each) do
+      reset_test_db!
+      WithTemplateAndUniqueID.new('slug' => '1').save
+      WithTemplateAndUniqueID.new('slug' => '2').save
+      WithTemplateAndUniqueID.new('slug' => '3').save
+      WithTemplateAndUniqueID.new('slug' => '4').save
+    end
+
+    it "should return an array of models or nil if not present" do
+      models = WithTemplateAndUniqueID.get_bulk(['1', '42', '4'])
+      models.should have(3).items
+      models.first.slug.should == '1'
+      models.second.should be_nil
+      models.third.slug.should == '4'
+    end
+
+    it "should return an array of models of raise error if not present" do
+      models = WithTemplateAndUniqueID.get_bulk!(['1', '2', '4'])
+      models.should have(3).items
+      models.first .slug.should == '1'
+      models.second.slug.should == '2'
+      models.third .slug.should == '4'
+
+      lambda { WithTemplateAndUniqueID.get_bulk!(['1', '42', '4']) }.should raise_error
+    end
+  end
+
   
   describe "getting a model with a subobject field" do
     before(:all) do
